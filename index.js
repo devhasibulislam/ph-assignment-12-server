@@ -42,11 +42,18 @@ async function run() {
         const productCollection = client.db("manufacturerWebsite").collection("products");
         const carouselCollection = client.db("manufacturerWebsite").collection("carousels");
         const hammerPhotosCollection = client.db("manufacturerWebsite").collection("hammerPhotos");
+        const reviewCollection = client.db("manufacturerWebsite").collection("reviews");
 
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
             const carousels = await carouselCollection.find({}).toArray();
             res.send(carousels);
+        })
+
+        // display reviews as section
+        app.get('/reviews', async (req, res) => {
+            const reviews = await reviewCollection.find({}).toArray();
+            res.send(reviews);
         })
 
         // display all hammer photos while necessary
