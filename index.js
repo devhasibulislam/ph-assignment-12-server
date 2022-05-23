@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 var bodyParser = require('body-parser');
 require('dotenv').config();
@@ -43,6 +43,7 @@ async function run() {
         const carouselCollection = client.db("manufacturerWebsite").collection("carousels");
         const hammerPhotosCollection = client.db("manufacturerWebsite").collection("hammerPhotos");
         const reviewCollection = client.db("manufacturerWebsite").collection("reviews");
+        const userOrdersCollection = client.db("manufacturerWebsite").collection("userOrders");
 
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
@@ -73,6 +74,21 @@ async function run() {
         app.get('/products', async (req, res) => {
             const products = await productCollection.find({}).toArray();
             res.send(products);
+        })
+
+        // display single product
+        app.get('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await productCollection.find(query).toArray();
+            res.send(product);
+        })
+
+        // add user order
+        app.post('/userOrder', async (req, res) => {
+            const orderInfo = req?.body;
+            const userOrder = await userOrdersCollection.insertOne(orderInfo);
+            res.send(userOrder);
         })
     } finally {
         // await client.close();
