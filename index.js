@@ -62,7 +62,7 @@ async function run() {
             const hammerPhotos = await hammerPhotosCollection.find({}).toArray();
             res.send(hammerPhotos);
         })
-        
+
         // add a new user
         app.post('/user', async (req, res) => {
             const user = req?.body;
@@ -72,8 +72,31 @@ async function run() {
 
         // display all products
         app.get('/products', async (req, res) => {
-            const products = await productCollection.find({}).toArray();
+            // const products = await productCollection.find({}).toArray();
+            // res.send(products);
+
+            const pageNumber = parseInt(req.query.pageNumber);
+
+            const query = {};
+            const cursor = productCollection.find(query);
+            let products;
+
+            if (pageNumber || 3) {
+                products = await cursor.skip(pageNumber * 3).limit(3).toArray();
+            } else {
+                products = await cursor.toArray();
+            }
+
             res.send(products);
+        })
+
+        // display amount/count of all products
+        app.get('/productCount', async (req, res) => {
+            // const productCount = await productCollection.find({}).count();
+            // res.send({ count: productCount });
+
+            const count = await productCollection.estimatedDocumentCount();
+            res.send({ count });
         })
 
         // display single product
@@ -89,6 +112,21 @@ async function run() {
             const orderInfo = req?.body;
             const userOrder = await userOrdersCollection.insertOne(orderInfo);
             res.send(userOrder);
+        })
+
+        // delete a user order
+        app.delete('/userOrder/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { userEmail: email };
+            const result = await userOrdersCollection.deleteOne(filter);
+            console.log(result);
+            res.send(result);
+        })
+
+        // display ordered product
+        app.get('/userOrders', async (req, res) => {
+            const userOrders = await userOrdersCollection.find({}).toArray();
+            res.send(userOrders);
         })
     } finally {
         // await client.close();
