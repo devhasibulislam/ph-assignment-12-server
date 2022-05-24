@@ -3,6 +3,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 var bodyParser = require('body-parser');
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -44,7 +45,7 @@ async function run() {
         const hammerPhotosCollection = client.db("manufacturerWebsite").collection("hammerPhotos");
         const reviewCollection = client.db("manufacturerWebsite").collection("reviews");
         const userOrdersCollection = client.db("manufacturerWebsite").collection("userOrders");
-        const paymentCollection = client.db('doctorsPortal').collection('payments');
+        const paymentCollection = client.db('manufacturerWebsite').collection('payments');
 
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
@@ -143,6 +144,49 @@ async function run() {
             res.send(userOrders);
         })
 
+        // display specific ordered product through id
+        app.get('/userOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const userOrder = await userOrdersCollection.findOne(query);
+            res.send(userOrder);
+        })
+
+        // add user order with payment method
+        app.patch('/userOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment?.transactionId
+                }
+            };
+
+            const result = await paymentCollection.insertOne(payment);
+            const updateUserOrder = await userOrdersCollection.updateOne(filter, updateDoc);
+            res.send(updateDoc);
+        })
+
+        // make a payment through create payment intent
+        app.post('/create-payment-intent', async (req, res) => {
+            const userOrder = req.body;
+            const totalPrize = userOrder?.totalPrize;
+            const amount = totalPrize * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: [
+                    "card"
+                ],
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        })
     } finally {
         // await client.close();
     }
