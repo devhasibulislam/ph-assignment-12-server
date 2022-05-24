@@ -44,11 +44,25 @@ async function run() {
         const hammerPhotosCollection = client.db("manufacturerWebsite").collection("hammerPhotos");
         const reviewCollection = client.db("manufacturerWebsite").collection("reviews");
         const userOrdersCollection = client.db("manufacturerWebsite").collection("userOrders");
+        const paymentCollection = client.db('doctorsPortal').collection('payments');
 
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
             const carousels = await carouselCollection.find({}).toArray();
             res.send(carousels);
+        })
+
+        // add user review
+        app.put('/review/:email', async (req, res) => {
+            const reviewerEmail = req.params.email;
+            const userReview = req.body;
+            const filter = { reviewerEmail: reviewerEmail };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: userReview
+            };
+            const usersReview = await reviewCollection.updateOne(filter, updateDoc, options);
+            res.send(usersReview);
         })
 
         // display reviews as section
@@ -128,6 +142,7 @@ async function run() {
             const userOrders = await userOrdersCollection.find({}).toArray();
             res.send(userOrders);
         })
+
     } finally {
         // await client.close();
     }
