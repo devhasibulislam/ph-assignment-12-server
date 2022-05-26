@@ -2,6 +2,7 @@ const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 var bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -114,6 +115,20 @@ async function run() {
             const user = req?.body;
             const result = await userCollection.insertOne(user);
             res.send(result);
+        });
+
+        // add a new user
+        app.put('/userAdd/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.PRIVATE_KEY, { expiresIn: '1h' })
+            res.send({ result, token });
         });
 
         // find user admin
