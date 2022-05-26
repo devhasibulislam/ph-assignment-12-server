@@ -88,13 +88,6 @@ async function run() {
         })
 
         // add a new user
-        /* app.post('/user', async (req, res) => {
-            const user = req?.body;
-            const result = await userCollection.insertOne(user);
-            res.send(result);
-        }); */
-
-        // add a new user
         app.put('/userAdd/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -194,16 +187,6 @@ async function run() {
             const userOrder = await userOrdersCollection.insertOne(orderInfo);
             res.send(userOrder);
         })
-
-        // delete a user order
-        /* may be unused (not sure!) */
-        // app.delete('/userOrder/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const filter = { userEmail: email };
-        //     const result = await userOrdersCollection.deleteOne(filter);
-        //     console.log(result);
-        //     res.send(result);
-        // })
 
         // delete a user order
         app.delete('/userOrder/:id', async (req, res) => {
