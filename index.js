@@ -242,6 +242,21 @@ async function run() {
             res.send(result);
         })
 
+        // update availability in total product collection
+        app.put('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const qty = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    toolAvailableQuantity: parseInt(qty?.toolAvailableQuantity)
+                }
+            };
+            const option = { upsert: true };
+            const result = await productCollection.updateOne(filter, updatedDoc, option);
+            res.send(result);
+        })
+
         // display specific ordered product through id
         app.get('/userOrder/:id', async (req, res) => {
             const id = req.params.id;
