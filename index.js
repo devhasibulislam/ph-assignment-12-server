@@ -237,8 +237,8 @@ async function run() {
                 }
             };
             const options = { upsert: true };
+            
             const result = await userOrdersCollection.updateOne(filter, updateDoc, options);
-            await productCollection.updateOne(filter, { nowAvailable: parseInt(qty?.toolAvailableQuantity) }, options);
             res.send(result);
         })
 
