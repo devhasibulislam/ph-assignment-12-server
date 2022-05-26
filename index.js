@@ -48,31 +48,6 @@ async function run() {
         const userOrdersCollection = client.db("manufacturerWebsite").collection("userOrders");
         const paymentCollection = client.db('manufacturerWebsite').collection('payments');
 
-        /**
-         * verify JWT for admin
-        */
-        const verifyAdmin = async (req, res, next) => {
-            const requester = req.decoded.email;
-            const requesterAccount = await userCollection.findOne({ email: requester });
-            if (requesterAccount.role === 'admin') {
-                next();
-            } else {
-                res.status(403).send({ message: "forbidden access" });
-            }
-        };
-
-        // add/update admin
-        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
-            const email = req.params.email;
-            const filter = { email: email };
-            const updateDoc = {
-                $set: { role: 'admin' }
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            const token = jwt.sign({ email: email }, process.env.PRIVATE_KEY, { expiresIn: '1d' });
-            res.send({ result, token });
-        })
-
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
             const carousels = await carouselCollection.find({}).toArray();
@@ -111,11 +86,11 @@ async function run() {
         })
 
         // add a new user
-        app.post('/user', async (req, res) => {
+        /* app.post('/user', async (req, res) => {
             const user = req?.body;
             const result = await userCollection.insertOne(user);
             res.send(result);
-        });
+        }); */
 
         // add a new user
         app.put('/userAdd/:email', async (req, res) => {
@@ -258,11 +233,12 @@ async function run() {
             const updateDoc = {
                 $set: {
                     approval: true,
-                    toolAvailableQuantity: qty?.toolAvailableQuantity
+                    toolAvailableQuantity: parseInt(qty?.toolAvailableQuantity)
                 }
             };
             const options = { upsert: true };
             const result = await userOrdersCollection.updateOne(filter, updateDoc, options);
+            await productCollection.updateOne(filter, { nowAvailable: parseInt(qty?.toolAvailableQuantity) }, options);
             res.send(result);
         })
 
