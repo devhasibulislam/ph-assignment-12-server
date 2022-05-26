@@ -47,6 +47,7 @@ async function run() {
         const reviewCollection = client.db("manufacturerWebsite").collection("reviews");
         const userOrdersCollection = client.db("manufacturerWebsite").collection("userOrders");
         const paymentCollection = client.db('manufacturerWebsite').collection('payments');
+        const blogsCollection = client.db('manufacturerWebsite').collection('blogs');
 
         // display carousel as slider
         app.get('/carousels', async (req, res) => {
@@ -299,6 +300,12 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
+        })
+
+        // access all blogs
+        app.get('/blogs', async (req, res) => {
+            const blogs = await blogsCollection.find({}).toArray();
+            res.send(blogs);
         })
     } finally {
         // await client.close();
