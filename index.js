@@ -76,7 +76,7 @@ async function run() {
         })
 
         // display all hammer photos while necessary
-        app.get('/hammerPhotos', async (req, res) => {
+        app.get('/hammerPhotos', verifyJWT,  async (req, res) => {
             const hammerPhotos = await hammerPhotosCollection.find({}).toArray();
             res.send(hammerPhotos);
         })
@@ -125,9 +125,6 @@ async function run() {
 
         // display each 3 products
         app.get('/products', async (req, res) => {
-            // const products = await productCollection.find({}).toArray();
-            // res.send(products);
-
             const pageNumber = parseInt(req.query.pageNumber);
 
             const query = {};
