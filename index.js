@@ -159,10 +159,10 @@ async function run() {
       const cursor = productCollection.find(query);
       let products;
 
-      if (pageNumber || 3) {
+      if (pageNumber || 10) {
         products = await cursor
-          .skip(pageNumber * 3)
-          .limit(3)
+          .skip(pageNumber * 10)
+          .limit(10)
           .toArray();
       } else {
         products = await cursor.toArray();
